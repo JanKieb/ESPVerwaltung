@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 #include <Esp.h>
 
-const char *ssid = "ParkplatzAP";
+const char *ssid = "ToilettenAP";
 const char *password = "12345678";
 const String ADMIN_ID = "admin123";
 

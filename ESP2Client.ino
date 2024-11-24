@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 
 // Netzwerkdaten
-const char* ssid = "ParkplatzAP";
+const char* ssid = "ToilettenAP";
 const char* password = "12345678";
 
 // Define button GPIO pins
@@ -18,12 +18,15 @@ const int relayRequestablePin = 5; // Relay for able to request status
 bool slotHeldPreviousState = false;
 String RelayPreviousState = "";
 
+static int lastRequestButtonState = HIGH;
+static int lastReleaseButtonState = HIGH;
+
 // WebSocket
 WebSocketsClient webSocket;
 const char* websocket_server = "192.168.4.1"; // IP des ESP1 (Access Point IP)
 
 // Benutzer-ID
-String userId = "user456"; 
+String userId = "ESP2Client"; 
 
 void setup() {
   Serial.begin(115200);
@@ -60,15 +63,14 @@ void setup() {
   webSocket.begin(websocket_server, 81, "/"); // Port 81 wird für WebSocket verwendet
   webSocket.onEvent(webSocketEvent); // Event-Funktion
   webSocket.setReconnectInterval(5000); // Automatische Wiederverbindung nach 5 Sekunden
+  webSocket.enableHeartbeat(15000, 3000, 2); // Heartbeat mit 15 Sekunden Intervall und 3x 3 Sekunden Timeout
+
 }
 
 void loop() {
   webSocket.loop(); // WebSocket-Verbindung aufrechterhalten
 
   // Handle button inputs
-  static int lastRequestButtonState = HIGH;
-  static int lastReleaseButtonState = HIGH;
-
   int requestButtonState = digitalRead(requestButtonPin);
   int releaseButtonState = digitalRead(releaseButtonPin);
 
