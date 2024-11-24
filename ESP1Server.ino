@@ -570,7 +570,7 @@ void releaseParking(uint8_t num, String userId, bool isAdminRelease, int adminSl
     }
   }
 
-  // If user was in queue, we're done after removing them
+  // If user was in queue we're done after removing them
   if (userRemovedFromQueue) {
     for (uint8_t i = 0; i < webSocket.connectedClients(); i++) {
       sendUpdate(i);
