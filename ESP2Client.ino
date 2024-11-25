@@ -284,10 +284,8 @@ void sendRestartLog(String reason) {
 
   Serial.println("Restart triggered: " + reason);
 
-  doc["message"] = "Client " + userId + " restarting: " + reason;
-  
-  String message;
-  serializeJson(doc, message);
+  String message = "Client " + userId + " restarting: " + reason;
+
 
   sendLog(message);
   delay(100); // Brief delay to ensure message is sent

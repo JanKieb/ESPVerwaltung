@@ -40,6 +40,7 @@ void setup() {
   server.begin();
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
+  webSocket.enableHeartbeat(15000, 3000, 2); // Heartbeat every 15 seconds
 
   for (int i = 0; i < totalSlots; i++) {
     parkingSlots[i] = {false, ""};
