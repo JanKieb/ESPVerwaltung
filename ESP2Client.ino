@@ -19,6 +19,7 @@ const int relayRequestablePin = 5; // Relay for able to request status
 
 bool slotHeldPreviousState = false;
 String RelayPreviousState = "";
+String previousSlotId = "";
 
 static int lastRequestButtonState = HIGH;
 static int lastReleaseButtonState = HIGH;
@@ -148,27 +149,35 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         
         // Check if this user has a slot
         bool hasSlot = false;
+        String currentSlotId = "";
         for (JsonVariant slot : slots) {
-          if (slot["userId"] == userId) {
-            hasSlot = true;
-            if (hasSlot && slotHeldPreviousState == false)
-            {
-              slotAssignedBlink();
+            if (slot["userId"] == userId) {
+                hasSlot = true;
+                currentSlotId = slot["id"].as<String>();  // Assuming each slot has an ID
+                
+                // Blink if assigned to a different slot than before
+                if (currentSlotId != previousSlotId) {
+                    slotAssignedBlink();
+                }
+                
+                previousSlotId = currentSlotId;
+                break;
             }
-            slotHeldPreviousState = true;
-            break;
-          }
+        }
+        // If no slot is assigned, reset the previousSlotId
+        if (!hasSlot) {
+            previousSlotId = "";
         }
         
         // Check if user is in queue
         bool inQueue = false;
         JsonArray queue = doc["queue"];
-        for (JsonVariant queueUser : queue) {
-          if (queueUser.as<String>() == userId) {
+        for (JsonVariant slot : queue) {
+          String slotUserId = slot["userId"].as<String>();
+          if (slotUserId == userId) {
             inQueue = true;
             slotHeldPreviousState = false;
             break;
-
           }
         }
         
@@ -266,6 +275,7 @@ void updateRelays(String status) {
     }
     else if (status == "inQueue") {
         digitalWrite(relayInQueuePin, HIGH);
+        digitalWrite(relaySlotHeldPin, HIGH);
         Serial.println("relayInQueuePin set to HIGH");
     }
     else if (status == "ableToRequest") {
@@ -273,6 +283,8 @@ void updateRelays(String status) {
         Serial.println("relayRequestablePin set to HIGH");
     }
     else {
+        digitalWrite(relaySlotHeldPin, HIGH);
+        Serial.println("relaySlotHeldPin set to HIGH");
         Serial.println("Unknown status: " + status);
     }
   }
