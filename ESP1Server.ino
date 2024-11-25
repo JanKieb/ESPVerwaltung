@@ -466,6 +466,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
             sendStatusResponse(num);
         } else if (action == "restart" && isAdmin) {
             restartServer();
+        } else if (doc["type"] == "log") {
+            // Handle log messages
+            String logMessage = doc["message"];
+            Serial.println("Log from client: " + logMessage);
+            sendLog(logMessage);
         }
       }
       break;

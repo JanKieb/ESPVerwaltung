@@ -2,6 +2,8 @@
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 
+void sendLog(String message);
+
 // Netzwerkdaten
 const char* ssid = "ToilettenAP";
 const char* password = "12345678";
@@ -20,6 +22,10 @@ String RelayPreviousState = "";
 
 static int lastRequestButtonState = HIGH;
 static int lastReleaseButtonState = HIGH;
+
+//checks for sync mismatches
+unsigned long lastSyncCheck = 0;
+const unsigned long SYNC_CHECK_INTERVAL = 30000; // Check every 30 seconds
 
 // WebSocket
 WebSocketsClient webSocket;
@@ -88,6 +94,13 @@ void loop() {
   }
   lastReleaseButtonState = releaseButtonState;
 
+  // Check for sync mismatches
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastSyncCheck >= SYNC_CHECK_INTERVAL) {
+    lastSyncCheck = currentMillis;
+    checkSyncState();
+  }
+
   delay(10); // Debounce delay
 }
 
@@ -103,6 +116,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       break;
     case WStype_TEXT: {
       String message = String((char *) payload);
+      //sync message from ESP1
+      String payloadStr = String((char*)payload);
+
       Serial.println("Received message: " + message);
       // Parse JSON message
       DynamicJsonDocument doc(1024);
@@ -113,6 +129,11 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         return;
       }
       
+      if (payloadStr.indexOf("statusResponse") > -1) {
+        handleStateSync(payloadStr);
+      }
+
+
       String messageType = doc["type"] | "";
       if (messageType == "update") {
         // Check if all slots are occupied
@@ -257,5 +278,85 @@ void updateRelays(String status) {
   }
   RelayPreviousState = status;
 }
+
+
+void sendRestartLog(String reason) {
+
+  Serial.println("Restart triggered: " + reason);
+
+  doc["message"] = "Client " + userId + " restarting: " + reason;
+  
+  String message;
+  serializeJson(doc, message);
+
+  sendLog(message);
+  delay(100); // Brief delay to ensure message is sent
+  ESP.restart();
+}
+
+void checkSyncState() {
+  // Create JSON message to request server state
+  DynamicJsonDocument doc(256);
+  doc["action"] = "checkStatus";
+  doc["userId"] = userId;
+
+  String message;
+  serializeJson(doc, message);
+  webSocket.sendTXT(message);
+}
+
+void handleStateSync(String payload) {
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, payload);
+  
+  if (error) {
+    Serial.println("Failed to parse state sync response");
+    return;
+  }
+
+  // Check if it's a status response message
+  if (doc["type"] == "statusResponse") {
+    bool foundSlot = false;
+    bool stateMatch = true;
+    
+    // Compare local state with server state
+    JsonArray slots = doc["parkingSlots"];
+    
+    // Check if our slot held status matches server state
+    for (JsonVariant slot : slots) {
+      if (slot["userId"] == userId) {
+        foundSlot = true;
+        stateMatch = (slot["occupied"].as<bool>() == slotHeldPreviousState);
+        break;
+      }
+    }
+
+    // Only restart if we found our slot and states don't match
+    if (foundSlot && !stateMatch) {
+      String reason = "State mismatch - local: " + String(slotHeldPreviousState) + 
+                     ", server: " + String(!slotHeldPreviousState);
+      sendRestartLog(reason);
+    }
+  }
+}
+
+
+void sendLog(String message) {
+  DynamicJsonDocument doc(256);
+  doc["type"] = "log"; 
+  doc["message"] = message;
+
+  // Serialize JSON document to a string
+  String output;
+  serializeJson(doc, output);
+
+  // Send the JSON string to the WebSocket server
+  webSocket.sendTXT(output);
+
+  // Local debug output
+  Serial.println("Log sent: " + output);
+}
+
+
 
 
