@@ -301,7 +301,7 @@ void sendRestartLog(String reason) {
 
   sendLog(message);
   delay(100); // Brief delay to ensure message is sent
-  ESP.restart();
+  //ESP.restart();
 }
 
 void checkSyncState() {
