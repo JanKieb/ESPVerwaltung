@@ -1,1 +1,9 @@
 .venv
+build/
+dist/
+*.spec
+*.exe
+*.py
+*.bat
+*.sh
+
