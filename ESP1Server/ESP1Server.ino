@@ -29,7 +29,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Configuring access point...");
 
-  if (!WiFi.softAP(ssid, password)) {
+  if (!WiFi.(ssid, password)) {
     log_e("Soft AP creation failed.");
     while (1);
   }

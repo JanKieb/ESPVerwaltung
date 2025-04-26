@@ -2,20 +2,6 @@
     "version": 4,
     "configurations": [
         {
-            "name": "Linux",
-            "compilerPath": "/usr/bin/clang",
-            "compilerArgs": [],
-            "intelliSenseMode": "linux-clang-x64",
-            "includePath": [
-                "${workspaceFolder}",
-                "/home/jan/Downloads/arduino-1.8.19/libraries/"
-            ],
-            "forcedInclude": [],
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "defines": []
-        },
-        {
             "name": "Arduino",
             "compilerPath": "/home/jan/.arduino15/packages/esp32/tools/esp-xs3/2302/bin/xtensa-esp32s3-elf-g++",
             "compilerArgs": [
@@ -403,7 +389,13 @@
                 "__ATOMIC_ACQ_REL=4",
                 "__ATOMIC_RELEASE=3",
                 "USBCON"
-            ]
+            ],
+            "browse": {
+                "path": [
+                    "/home/jan/.arduino15/packages/esp32/hardware/esp32/3.0.7/cores/esp32",
+                    "/home/jan/.arduino15/packages/esp32/hardware/esp32/3.0.7/libraries"
+                ]
+            }
         }
     ]
 }
