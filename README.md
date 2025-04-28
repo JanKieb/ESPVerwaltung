@@ -47,13 +47,3 @@ This repository contains two updater applications:
 - **Upload failed:** Try pressing the reset button on your ESP32 device and run the updater again
 - **Compilation errors:** These are shown in the log window - check if there are any specific error messages
 
-## Building the Updaters (For Developers)
-
-If you need to build the updater executables:
-
-1. Clone this repository
-2. Run the build script:
-   ```
-   python build_esp_updater.py
-   ```
-3. The executables will be created in the `dist` folder
