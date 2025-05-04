@@ -12,7 +12,7 @@ void releaseParking(uint8_t num, String userId, bool isAdminRelease, int adminSl
 WebSocketsServer webSocket = WebSocketsServer(81);
 WiFiServer server(80);
 
-const int totalSlots = 2;
+const int totalSlots = 2; 
 struct ParkingSlot {
   bool occupied;
   String userId;

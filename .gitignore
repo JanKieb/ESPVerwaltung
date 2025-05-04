@@ -2,8 +2,8 @@
 build/
 dist/
 *.spec
-
 *.py
+
 *.bat
 *.sh
 
